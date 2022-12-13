@@ -14,4 +14,4 @@ RUN dotnet publish -c Release -o publish --use-current-runtime -p:"PublishAot=tr
 FROM mcr.microsoft.com/dotnet/runtime-deps:7.0
 WORKDIR /app
 COPY --from=build /source/publish .
-ENTRYPOINT [ "./aoc" ]
+ENTRYPOINT [ "./day01" ]
