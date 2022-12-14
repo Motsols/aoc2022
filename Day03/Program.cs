@@ -1,7 +1,4 @@
-﻿using System.Diagnostics.Metrics;
-using System.Security.Cryptography.X509Certificates;
-
-var input = File.ReadAllLines("input.txt").ToList();
+﻿var input = File.ReadAllLines("input.txt").ToList();
 var alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 Console.WriteLine(Environment.GetEnvironmentVariable("part") is "part1" ? Part1(input) : Part2(input));
