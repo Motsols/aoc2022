@@ -1,17 +1,12 @@
-FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
-
-# Install NativeAOT build prerequisites
-RUN apt-get update && apt-get install -y --no-install-recommends \
-       clang \
-       zlib1g-dev
-
-WORKDIR /source
-COPY Day02.csproj .
-COPY input.txt .
-COPY Program.cs .
-RUN dotnet publish -c Release -o publish --use-current-runtime -p:"PublishAot=true;StripSymbols=true;IlcOptimizationPreference=Speed"
-
-FROM mcr.microsoft.com/dotnet/runtime-deps:7.0
+FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine as build
 WORKDIR /app
-COPY --from=build /source/publish .
-ENTRYPOINT [ "./Day02" ]
+RUN apk add clang build-base zlib-dev
+COPY . .
+RUN dotnet publish -c Release -r linux-musl-x64 -o .
+
+FROM alpine:latest
+WORKDIR /
+RUN apk add libstdc++
+COPY --from=build /app/Day02 .
+COPY ./input.txt .
+ENTRYPOINT ./Day02
