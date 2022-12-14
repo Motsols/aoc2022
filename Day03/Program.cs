@@ -2,7 +2,6 @@
 var alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 Console.WriteLine(Environment.GetEnvironmentVariable("part") is "part1" ? Part1(input) : Part2(input));
-Console.ReadKey();
 
 int Part1(IEnumerable<string> input) => input.Select(i =>
 {
