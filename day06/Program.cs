@@ -14,10 +14,9 @@ int FindMarker(int length)
     do
     {
         var s = input.Substring(start, length);
-        var uniqueLetters = s.Select(c => c).Distinct();
         if (s.Select(c => c).Distinct().Count() == length)
             sequenceFound = true;
-
+        
         start++;
     } while (!sequenceFound);
 
