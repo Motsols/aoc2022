@@ -1,12 +1,9 @@
 ﻿var input = File.ReadAllLines("input.txt");
-int lowestX = int.MaxValue, highestX = 0, highestY = 0, sandUnits = 0, fallheight = 0, minX = 0, maxX = int.MaxValue, maxY = 0;
+int lowestX = int.MaxValue, highestX = 0, highestY = 0, sandUnits = 0, minX = 0, maxX = int.MaxValue, maxY = 0, switchLeft = 0;
 bool outOfBounds = false;
 string[,] caveStructure;
 
-//BuildCaveStructure();
-
-Console.WriteLine(Environment.GetEnvironmentVariable("part") is "part1" ? Part1() : Part1());
-Console.ReadKey();
+Console.WriteLine(Environment.GetEnvironmentVariable("part") is "part1" ? Part1() : Part2());
 
 int Part1()
 {
@@ -14,91 +11,64 @@ int Part1()
     maxX = highestX; maxY = highestY;
     do
     {
-        bool stable = false;
         int lastPositionY = 0, lastPositionX = 500 - lowestX;
-        do
-        {
-            if (CanMoveDown(lastPositionY, lastPositionX))
-            {
-                lastPositionY += 1;
-            }
-            else if (CanMoveDownLeft(lastPositionY, lastPositionX))
-            {
-                lastPositionX += -1;
-                lastPositionY += 1;
-            }
-            else if (CanMoveDownRight(lastPositionY, lastPositionX))
-            {
-                lastPositionX += 1;
-                lastPositionY += 1;
-            }
-            else
-            {
-                stable = true;
-                caveStructure[lastPositionY, lastPositionX] = "O";
-            }
-        } while (!stable && !outOfBounds);
 
-        fallheight += -1;
-        sandUnits += outOfBounds ? 0 : 1;
-        PrintCaveSystem();
+        MoveSand(lastPositionY, lastPositionX);
     } while (!outOfBounds);
 
     return sandUnits;
 };
-
-bool CanMoveDown(int y, int x) => IsWithinBounds(y + 1, x) && caveStructure[y + 1, x] == null;
-bool CanMoveDownLeft(int y, int x) => IsWithinBounds(y + 1, x - 1) && caveStructure[y + 1, x - 1] == null;
-bool CanMoveDownRight(int y, int x) => IsWithinBounds(y + 1, x + 1) && caveStructure[y + 1, x + 1] == null;
-bool IsWithinBounds(int y, int x)
-{
-    var withinBounds = x > 0 && x < maxX && y <= highestY;
-    if (!withinBounds)
-        outOfBounds = true;
-
-    return withinBounds;
-}
 
 int Part2()
 {
+    switchLeft = 300;
     BuildCaveStructure(true);
-    maxX = 1000; maxY = highestY + 2;
+    maxX = 1001-(switchLeft*2); maxY = highestY + 2;
     do
     {
         bool stable = false;
-        int lastPositionY = 0, lastPositionX = 1000;
-        do
-        {
-            if (CanMoveDown(lastPositionY, lastPositionX))
-            {
-                lastPositionY += 1;
-            }
-            else if (CanMoveDownLeft(lastPositionY, lastPositionX))
-            {
-                lastPositionX += -1;
-                lastPositionY += 1;
-            }
-            else if (CanMoveDownRight(lastPositionY, lastPositionX))
-            {
-                lastPositionX += 1;
-                lastPositionY += 1;
-            }
-            else
-            {
-                stable = true;
-                caveStructure[lastPositionY, lastPositionX] = "O";
-            }
-        } while (!stable && !outOfBounds);
+        int lastPositionY = 0, lastPositionX = 500 - switchLeft;
 
-        fallheight += -1;
-        sandUnits += outOfBounds ? 0 : 1;
-        PrintCaveSystem();
+        if (!CanSpawnSand(lastPositionY, lastPositionX))
+            outOfBounds = true;
+
+        MoveSand(lastPositionY, lastPositionX);
     } while (!outOfBounds);
 
     return sandUnits;
 };
 
-int ToInt(string s) => int.Parse(s.ToString());
+void MoveSand(int lastPositionY, int lastPositionX)
+{
+    bool stable = false;
+
+    do
+    {
+        if (CanMoveDown(lastPositionY, lastPositionX))
+        {
+            lastPositionY += 1;
+        }
+        else if (CanMoveDownLeft(lastPositionY, lastPositionX))
+        {
+            lastPositionX += -1;
+            lastPositionY += 1;
+        }
+        else if (CanMoveDownRight(lastPositionY, lastPositionX))
+        {
+            lastPositionX += 1;
+            lastPositionY += 1;
+        }
+        else
+        {
+            stable = true;
+            caveStructure[lastPositionY, lastPositionX] = "O";
+        }
+    } while (!stable && !outOfBounds);
+
+    sandUnits += outOfBounds ? 0 : 1;
+    //if (sandUnits < 1500 || sandUnits > 25158)
+    //    PrintCaveSystem(true);
+}
 
 void BuildCaveStructure(bool part2)
 {
@@ -116,11 +86,8 @@ void BuildCaveStructure(bool part2)
 
         for (int i = 1; i < points.Count(); i++)
             formations.Add(new List<int[]> { { points[i - 1] }, { points[i] } });
-
-        //if(part2)
-        //    for (int i = 1; i <= 1000; i++)
-        //        formations.Add(new List<int[]> { { points[i - 1] }, { points[i] } });
     }
+
     if (!part2)
     {
         caveStructure = new string[highestY + 1, highestX - lowestX + 1];
@@ -128,10 +95,11 @@ void BuildCaveStructure(bool part2)
     }
     else
     {
-        formations.Add(new List<int[]> { new[] { 0, highestY + 2 }, new[] { 1000, highestY + 2 } });
-        highestX = 1000;
+        formations.Add(new List<int[]> { new[] { 0+switchLeft, highestY + 2 }, new[] { 800, highestY + 2 } });
+        highestX = 1000-switchLeft;
+        highestY += 3;
         caveStructure = new string[highestY + 3, highestX + 1];
-        caveStructure[0, 500] = "+";
+        caveStructure[0, 500-switchLeft] = "+";
     }
 
     foreach (var formation in formations)
@@ -141,8 +109,8 @@ void BuildCaveStructure(bool part2)
 
         if (part2)
         {
-            point1X = formation[0][0]; point1Y = formation[0][1];
-            point2X = formation[1][0]; point2Y = formation[1][1];
+            point1X = formation[0][0] - switchLeft; point1Y = formation[0][1];
+            point2X = formation[1][0] - switchLeft; point2Y = formation[1][1];
         }
         else
         {
@@ -156,7 +124,7 @@ void BuildCaveStructure(bool part2)
         if (point1X == point2X && point2Y > point1Y) DrawLineY(point1Y, point2Y, point1X);
     }
 
-    PrintCaveSystem();
+    //PrintCaveSystem(part2);
 }
 
 void DrawLineX(int smallX, int bigX, int y)
@@ -175,22 +143,38 @@ void DrawLineY(int smallY, int bigY, int x)
     }
 }
 
-void PrintCaveSystem()
+int ToInt(string s) => int.Parse(s.ToString());
+bool CanSpawnSand(int y, int x) => caveStructure[y, x] == "+";
+bool CanMoveDown(int y, int x) => IsWithinBounds(y + 1, x) && caveStructure[y + 1, x] == null;
+bool CanMoveDownLeft(int y, int x) => IsWithinBounds(y + 1, x - 1) && caveStructure[y + 1, x - 1] == null;
+bool CanMoveDownRight(int y, int x) => IsWithinBounds(y + 1, x + 1) && caveStructure[y + 1, x + 1] == null;
+bool IsWithinBounds(int y, int x)
 {
-    var origRow = Console.CursorTop;
-    var origCol = Console.CursorLeft;
-    Console.Clear();
-    for (int i = 0; i <= highestY; i++)
-    {
-        var columns = new List<string>();
-        for (int j = 0; j <= highestX - lowestX; j++)
-        {
-            var value = caveStructure[i, j];
-            columns.Add(string.IsNullOrWhiteSpace(value) ? " " : value);
-        }
-        Console.SetCursorPosition(0, i);
-        Console.Write(string.Join("", columns));
-        //Console.WriteLine(string.Join("", columns));
-    }
-    Thread.Sleep(20);
+    var withinBounds = x > 0 && x < maxX && y <= highestY;
+    if (!withinBounds)
+        outOfBounds = true;
+
+    return withinBounds;
 }
+
+//void PrintCaveSystem(bool part2)
+//{
+//    var origRow = Console.CursorTop;
+//    var origCol = Console.CursorLeft;
+//    var columns = part2 ? highestX : highestX - lowestX;
+
+//    Console.Clear();
+//    for (int i = 0; i <= highestY; i++)
+//    {
+//        var printColumns = new List<string>();
+//        for (int j = 0; j <= columns; j++)
+//        {
+//            var value = caveStructure[i, j];
+//            printColumns.Add(string.IsNullOrWhiteSpace(value) ? " " : value);
+//        }
+//        Console.SetCursorPosition(0, i);
+//        Console.Write(string.Join("", printColumns));
+//        //Console.WriteLine(string.Join("", columns));
+//    }
+//    Thread.Sleep(70);
+//}
